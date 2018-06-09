@@ -20,6 +20,19 @@ Simple overview:
  o A certain percentage of tiles are placed randomly (not grid aligned) based on default or user settings.  
  o The program writes the output image to disk and displays it to the user.  
 
+# Usage
+
+Invoke this program with up to four command line arguments:  
+1. (mandatory) -f `filename` The image file to reproduce.
+2. (mandatory) -s `##` The size of tile to use in the reproduction (i.e. 32)
+3. (optional) -e An error threshold, that when exceed, adds previously used tiles back into the mix of available tiles. (Default is 66).
+4. (optional) -r [0-100] A percentage of tiles to place randomly (not grid aligned).
+5. (optional) -k Keep Going and force a match even if error threshold cannot be met.
+
+Example: `python PyImgMoasic.py -f moon.jpg -s 16 -r 15`  
+
+Output is written to filename_out.png, i.e. moon_out.png.  
+
 # Limits
 
 This is not optimized in any way for speed.  Even with this implementation, I was able to convert a 10000x10000 pixel image to 64x64 tiles in about a minute.  

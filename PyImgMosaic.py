@@ -19,7 +19,8 @@ images that you want to use as small tiles. """
 	2) (mandatory) -s The size of tile to use in the reproduction
 	3) (optional) -e An error threshold, that when exceed, adds previously
 	   used tiles back into the mix of available tiles.
-	4) (optional) -r A percentage of tiles to place cover randomly (not grid aligned)
+	4) (optional) -r [0-100] A percentage of tiles to place cover randomly (not grid aligned)
+	5) (optional) -k Keep Going and force a match even if error threshold cannot be met
 
 Example: python PyImgMoasic.py -f moon.jpg -s 16 -r 15
 
@@ -32,6 +33,7 @@ target_img = None
 tiles = {} # key is filename, value is avg RGB
 discarded = {} # store for used images
 tilesize = None
+forcematch = False
 threshold = 66 # determined by experimenting
 source_path = "./img_scaled/"
 rnd_cover = 20
@@ -84,12 +86,13 @@ def best_match(val):
 			if score < err:
 				err = score	
 				match = k
-	if match == None or err > threshold: # no options. giving up.
+	if match == None or err > threshold: # no options. giving up (maybe).
 		print("Error: No tiles, or can't meet error threshold.")
 		print("Threshold set to: " + str(threshold))
 		print("Current error is: " + str(err))
 		print("RGB value to match was: " + str(val))
-		exit()
+		if match == None or forcematch == False:
+			exit()
 	return match
 
 def print_usage():
@@ -111,7 +114,9 @@ if __name__ == "__main__":
 	if '-e' in sys.argv:
 		threshold = int(sys.argv[sys.argv.index('-e') + 1])
 	if '-r' in sys.argv:
-		rnd_cover = int(sys.argv[sys.argv.index('-r') + 1]) % 100
+		rnd_cover = int(sys.argv[sys.argv.index('-r') + 1]) % 101
+	if '-k' in sys.argv:
+		forcematch = True
 	source_path += str(tilesize) + "/"
 	
 	# Use bash script and ImageMagic for conversion process
