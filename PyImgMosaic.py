@@ -8,31 +8,33 @@ import os
 import sys
 from subprocess import call
 from math import sqrt
+from random import randint
 
 """ Create a directory called 'img_src' in the same
 location as this script.  Populate this directory with
 images that you want to use as small tiles. """
 
-""" Invoke this program with two mandatory command line args
-    and one optional third argument:
-	1) The image file to reproduce.
-	2) The size of tile to use in the reproduction
-    3) An error threshold, that when exceed, adds previously
-       used tiles back into the mix of available tiles.  
+""" Invoke this program with up to four command line arguments:
+	1) (mandatory) -f The image file to reproduce.
+	2) (mandatory) -s The size of tile to use in the reproduction
+	3) (optional) -e An error threshold, that when exceed, adds previously
+	   used tiles back into the mix of available tiles.
+	4) (optional) -r A percentage of tiles to place cover randomly (not grid aligned)
 
-Example: python PyImgMoasic.py moon.jpg 16
+Example: python PyImgMoasic.py -f moon.jpg -s 16 -r 20
 
 Output is written to filename_out.png, i.e. 
  moon_out.png.
 
 """
 
-target_img  = None
+target_img = None
 tiles = {} # key is filename, value is avg RGB
 discarded = {} # store for used images
 tilesize = None
 threshold = 66 # determined by experimenting
 source_path = "./img_scaled/"
+rnd_cover = 15
 
 # returns average (r, g, b) value tuple for an an image
 def rank_image(im):
@@ -67,7 +69,7 @@ def best_match(val):
 			err = score	
 			match = k
 	if match == None or err > threshold: # ran out of good images
-		print("Tripped error threshold.")	
+		print("Tripped error threshold: " + str(err))
 		tiles.update(discarded) # put previously discarded images back in play
 		discarded = {}
 		for k,v in tiles.items():
@@ -81,19 +83,25 @@ def best_match(val):
 		exit()
 	return match
 
-if __name__ == "__main__":
-
-	if len(sys.argv) < 3:
-		print("Usage: python PyImgMoasic.py filename tilesize [error]")
-		print("Example: python PyImgMoasic.py moon.jpg 16")
-		print("Default value for error is 66.")
+def print_usage():
+		print("Usage: python PyImgMoasic.py -f filename -s tilesize [-e error] [-r random_placement]")
+		print("Example: python PyImgMoasic.py -f moon.jpg -s 16")
+		print("Default value for error is " + str(threshold) + ".")
+		print("Default value for random placement is " + str(rnd_cover) + ".")
 		exit()
 
+if __name__ == "__main__":
+
+	if len(sys.argv) < 5 or '-f' not in sys.argv or '-s' not in sys.argv:
+		print_usage() # show proper format and exit
+
 	# Read user set parameters, and update source path
-	target_img = sys.argv[1]
-	tilesize = int(sys.argv[2])
-	if len(sys.argv) > 3:
-		threshold = int(sys.argv[3])
+	target_img = sys.argv[sys.argv.index('-f') + 1]
+	tilesize = int(sys.argv[sys.argv.index('-s') + 1])
+	if '-e' in sys.argv:
+		threshold = int(sys.argv[sys.argv.index('-e') + 1])
+	if '-r' in sys.argv:
+		rnd_cover = int(sys.argv[sys.argv.index('-r') + 1])
 	source_path += str(tilesize) + "/"
 	
 	# Use bash script and ImageMagic for conversion process
@@ -139,8 +147,28 @@ if __name__ == "__main__":
 			if match_img.mode is not 'RGBA' or 'RGB': # prevent errors with B&W images
 				match_img = match_img.convert('RGB')
 			# place tile in appropriate location of our output image
-			out_img.paste(match_img, box, None) 
+			out_img.paste(match_img, box, None)
 
+	# cover rnd_cover percent of the image with tiles not aligned to grid
+	for r in range(int(width*height*rnd_cover/100./tilesize)):
+		x = randint(1,width-tilesize-1)
+		y = randint(1,height-tilesize-1)
+		if x % tilesize == 0:
+			x+=1
+		if y % tilesize == 0:
+			y+=1
+		box = (x, y, x+tilesize, y+tilesize)
+		region = target.crop(box)
+		# find the average RGB value of the tile
+		match = best_match(rank_image(region))
+		# take match out of availability
+		discarded.update({match:tiles[match]})
+		del tiles[match]
+		match_img = Image.open(source_path+match)
+		if match_img.mode is not 'RGBA' or 'RGB': # prevent errors with B&W images
+			match_img = match_img.convert('RGB')
+		# place tile in appropriate location of our output image
+		out_img.paste(match_img, box, None)
 
 	# save output and show the user
 	out_img.save(target_img+"_out.png", "PNG")
