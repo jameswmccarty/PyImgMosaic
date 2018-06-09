@@ -50,10 +50,15 @@ def rank_image(im):
 	return (r/d, g/d, b/d)
 
 # returns mean squared error between two (r, g, b) values
+# https://en.wikipedia.org/wiki/Color_difference
 def pxl_dist(a, b):
-	ssd  = (a[0]-b[0])**2
-	ssd += (a[1]-b[1])**2
-	ssd += (a[2]-b[2])**2
+	delt_r = a[0]-b[0]
+	delt_bsq = (a[2]-b[2])**2 
+	r_bar  = delt_r / 2.
+	ssd  = 2 * delt_r**2
+	ssd += 4 * (a[1]-b[1])**2
+	ssd += 3 * delt_bsq
+	ssd += (r_bar * (delt_r**2 - delt_bsq)) / 256.
 	return sqrt(ssd)
 
 # find closest match remaining in the dictionary.  give up if no good matches.
@@ -112,6 +117,7 @@ if __name__ == "__main__":
 	# Use bash script and ImageMagic for conversion process
 	print("Generating tile images...")
 	call(["./scaler.sh", str(tilesize)])
+
 
 	# Add filenames and average RGB values to a dictionary called tiles
 	for filename in os.listdir(source_path):
