@@ -21,7 +21,7 @@ images that you want to use as small tiles. """
 	   used tiles back into the mix of available tiles.
 	4) (optional) -r A percentage of tiles to place cover randomly (not grid aligned)
 
-Example: python PyImgMoasic.py -f moon.jpg -s 16 -r 20
+Example: python PyImgMoasic.py -f moon.jpg -s 16 -r 15
 
 Output is written to filename_out.png, i.e. 
  moon_out.png.
@@ -34,7 +34,7 @@ discarded = {} # store for used images
 tilesize = None
 threshold = 66 # determined by experimenting
 source_path = "./img_scaled/"
-rnd_cover = 15
+rnd_cover = 20
 
 # returns average (r, g, b) value tuple for an an image
 def rank_image(im):
@@ -56,6 +56,7 @@ def pxl_dist(a, b):
 	ssd += (a[2]-b[2])**2
 	return sqrt(ssd)
 
+# find closest match remaining in the dictionary.  give up if no good matches.
 def best_match(val):
 	global tiles
 	global discarded
@@ -80,6 +81,9 @@ def best_match(val):
 				match = k
 	if match == None or err > threshold: # no options. giving up.
 		print("Error: No tiles, or can't meet error threshold.")
+		print("Threshold set to: " + str(threshold))
+		print("Current error is: " + str(err))
+		print("RGB value to match was: " + str(val))
 		exit()
 	return match
 
@@ -87,6 +91,7 @@ def print_usage():
 		print("Usage: python PyImgMoasic.py -f filename -s tilesize [-e error] [-r random_placement]")
 		print("Example: python PyImgMoasic.py -f moon.jpg -s 16")
 		print("Default value for error is " + str(threshold) + ".")
+		print("Try smaller error for Black & White input images.")
 		print("Default value for random placement is " + str(rnd_cover) + ".")
 		exit()
 
@@ -101,7 +106,7 @@ if __name__ == "__main__":
 	if '-e' in sys.argv:
 		threshold = int(sys.argv[sys.argv.index('-e') + 1])
 	if '-r' in sys.argv:
-		rnd_cover = int(sys.argv[sys.argv.index('-r') + 1])
+		rnd_cover = int(sys.argv[sys.argv.index('-r') + 1]) % 100
 	source_path += str(tilesize) + "/"
 	
 	# Use bash script and ImageMagic for conversion process
@@ -150,7 +155,7 @@ if __name__ == "__main__":
 			out_img.paste(match_img, box, None)
 
 	# cover rnd_cover percent of the image with tiles not aligned to grid
-	for r in range(int(width*height*rnd_cover/100./tilesize)):
+	for r in range(int(width*height*rnd_cover/100./tilesize**2)):
 		x = randint(1,width-tilesize-1)
 		y = randint(1,height-tilesize-1)
 		if x % tilesize == 0:
@@ -173,16 +178,3 @@ if __name__ == "__main__":
 	# save output and show the user
 	out_img.save(target_img+"_out.png", "PNG")
 	out_img.show()
-
-
-
-
-
-		
-		
-		
-		
-
-
-
-

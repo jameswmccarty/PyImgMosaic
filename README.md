@@ -24,7 +24,7 @@ Simple overview:
 
 This is not optimized in any way for speed.  Even with this implementation, I was able to convert a 10000x10000 pixel image to 64x64 tiles in about a minute.  
 
-For best results, build a large cache of source images to use for better color matching.  Imgur dumps work well.  
+For best results, build a large cache of source images to use for better color matching.  Imgur dumps work well.  If you are having trouble getting a specific RGB value to match, try making the tile size larger, or raising the error threshold.
 
 The default threshold for error testing was determined by playing with the output for 10 minutes.  You may have to search for an optimal value.  
 
