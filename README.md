@@ -33,6 +33,12 @@ Example: `python PyImgMoasic.py -f moon.jpg -s 16 -r 15`
 
 Output is written to filename_out.png, i.e. moon_out.png.  
 
+# colorView.py
+
+This is a utility python program that requires Vpython to run (http://vpython.org/).  It is a quick-and-dirty way to understand the distribution of colors available in your img_scaled directory.  Example screenshot below.
+
+![colorView output](vpython_scene.png "Example colorView output image.")
+
 # Limits
 
 This is not optimized in any way for speed.  Even with this implementation, I was able to convert a 10000x10000 pixel image to 64x64 tiles in about a minute.  
