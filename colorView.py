@@ -60,6 +60,11 @@ if __name__ == "__main__":
 	spheres.append(sphere(pos=vector(0,255,255), radius=5., color=vector(0,1,1)))
 	spheres.append(sphere(pos=vector(255,255,255), radius=5., color=vector(1,1,1)))
 
+	# Connect RGB axis with solid cylinders
+	cylinder(pos=vector(0,0,0), axis=vector(255,0,0), color=vector(1,0,0), radius=1)
+	cylinder(pos=vector(0,0,0), axis=vector(0,255,0), color=vector(0,1,0), radius=1)
+	cylinder(pos=vector(0,0,0), axis=vector(0,0,255), color=vector(0,0,1), radius=1)
+
 	# Scan filenames and average RGB values
 	for filename in os.listdir(source_path):
 		print("Processing " + filename)
